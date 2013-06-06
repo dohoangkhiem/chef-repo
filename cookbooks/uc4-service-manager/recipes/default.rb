@@ -36,6 +36,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
     owner 'root'
     group 'root'
     mode 00755
+    recursive true
     action :create
   end
 
