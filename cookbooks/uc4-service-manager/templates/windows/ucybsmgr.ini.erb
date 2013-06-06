@@ -1,0 +1,20 @@
+[GLOBAL]
+language=(E,D)
+logging=*OWN\..\temp\SMgr_LOG_##.txt
+logcount=10
+helplib=*OWN\UC.msl
+helpcache=all
+port=<%= node['uc4servicemanager']['port'] %>
+restart_limit=(60,3)
+
+[TRACE]
+file=*OWN\..\temp\SMgr_TRACE_##.txt
+trccount=10
+
+cmd=0
+tcp/ip=0
+
+[Destination UC4]
+deffile=<%= node['uc4servicemanager']['smd_file'] %>
+cmdfile=<%= node['uc4servicemanager']['smc_file'] %>
+
