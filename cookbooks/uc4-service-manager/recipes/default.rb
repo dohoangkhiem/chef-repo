@@ -31,7 +31,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   cookbook_file "#{cache_path}/smgr.tar.gz" do
     source "linux/#{package_name}.tar.gz"
     mode 00755
-    action :create
+    action :create_if_missing
   end
 
   directory node['uc4servicemanager']['path'] do
@@ -43,8 +43,10 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   end
 
   execute "extract" do
-    command "tar xzvf #{cache_path}/smgr.tar.gz -C #{smgr_dest}"
+    cwd cache_path
+    command "tar xzvf smgr.tar.gz -C #{smgr_dest}"
     action :run
+    not_if { ::File.exists?("#{smgr_dest}/bin/ucybsmgr.exe") }
   end
 
   execute "change-owner" do
@@ -70,7 +72,7 @@ end
 if platform?("windows")  
   cookbook_file "#{cache_path}\\smgr.zip" do
     source "#{package_name}.zip"
-    action :create
+    action :create_if_missing
   end
 
   directory node['uc4servicemanager']['path'] do

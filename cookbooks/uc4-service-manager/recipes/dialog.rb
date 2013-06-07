@@ -24,7 +24,7 @@ if platform? "windows"
   
   cookbook_file "#{cache_path}\\smd.zip" do
     source "#{package_name}.zip"
-    action :create
+    action :create_if_missing
   end
 
   # Extract service manager dialog to destination
