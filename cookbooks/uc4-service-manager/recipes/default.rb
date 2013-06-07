@@ -67,6 +67,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   end
 end
 
+# For Windows node
 if platform?("windows")
   directory "C:\\uc4\\temp" do
     recursive true
