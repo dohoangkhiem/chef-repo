@@ -7,12 +7,10 @@
 # All rights reserved - Do Not Redistribute
 #
 
+smd_dest = node['uc4servicemanager']['path_dialog']
+cache_path = Chef::Config[:file_cache_path]
+
 if platform? "windows"
-  directory "C:\\uc4\\temp" do
-    recursive true
-    action :create
-  end
-  
   arch = node['kernel']['machine']
 
   if (arch =~ /i(.{1})86/)
@@ -24,19 +22,16 @@ if platform? "windows"
     package_name = 'ucsmdia64'
   end
   
-  cookbook_file "C:\\uc4\\temp\\smd.zip" do
+  cookbook_file "#{cache_path}\\smd.zip" do
     source "#{package_name}.zip"
     action :create
   end
 
   # Extract service manager dialog to destination
   windows_zipfile node['uc4servicemanager']['path_dialog'] do 
-    source "C:\\uc4\\temp\\smd.zip"
+    source "#{cache_path}\\smd.zip"
     action :unzip
+    not_if {::File.exists?("#{smd_dest}\\bin\\ucybsmdi.exe")}
   end
 
-  # cleanup
-  file "C:\\uc4\\temp\\smd.zip" do
-    action :delete
-  end
 end

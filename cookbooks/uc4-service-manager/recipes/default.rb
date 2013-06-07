@@ -10,6 +10,8 @@
 # installation location on node
 smgr_dest = node['uc4servicemanager']['path']
 
+cache_path = Chef::Config[:file_cache_path]
+
 # determine package to install based on the processor architecture
 arch = node['kernel']['machine']
 
@@ -26,7 +28,7 @@ end
 if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platform_family'])
   
   # copy service manager archive to temp location
-  cookbook_file "/tmp/smgr.tar.gz" do
+  cookbook_file "#{cache_path}/smgr.tar.gz" do
     source "linux/#{package_name}.tar.gz"
     mode 00755
     action :create
@@ -41,7 +43,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   end
 
   execute "extract" do
-    command "tar xzvf /tmp/smgr.tar.gz -C #{smgr_dest}"
+    command "tar xzvf #{cache_path}/smgr.tar.gz -C #{smgr_dest}"
     action :run
   end
 
@@ -62,27 +64,25 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   end
 
   # cleanup
-  file "/tmp/smgr.tar.gz" do
-    action :delete
-  end
 end
 
 # For Windows node
-if platform?("windows")
-  directory "C:\\uc4\\temp" do
-    recursive true
+if platform?("windows")  
+  cookbook_file "#{cache_path}\\smgr.zip" do
+    source "#{package_name}.zip"
     action :create
   end
-  
-  cookbook_file "C:\\uc4\\temp\\smgr.zip" do
-    source "#{package_name}.zip"
+
+  directory node['uc4servicemanager']['path'] do
+    recursive true
     action :create
   end
   
   # Extract service manager to destination
   windows_zipfile node['uc4servicemanager']['path'] do 
-    source "C:\\uc4\\temp\\smgr.zip"
+    source "#{cache_path}\\smgr.zip"
     action :unzip
+    not_if {::File.exists?("#{smgr_dest}\\bin\\ucybsmgr.exe")}
   end
 
   template "#{smgr_dest}\\bin\\ucybsmgr.ini" do
@@ -97,11 +97,6 @@ if platform?("windows")
   # start UC4 service
   service "UC4.ServiceManager.uc4" do
     action [:enable, :start]
-  end
-
-  # cleanup
-  file "C:\\uc4\\temp\\smgr.zip" do
-    action :delete
   end
 
 end
