@@ -93,7 +93,7 @@ if platform?("windows")
 
   # execute service manager to install to Windows Service
   windows_batch "install-service" do
-    code "#{smgr_dest}\\bin\\ucybsmgr.exe -install -iC #{smgr_dest}\\bin\\ucybsmgr.ini"
+    code "#{smgr_dest}\\bin\\ucybsmgr.exe -install uc4 -i#{smgr_dest}\\bin\\ucybsmgr.ini"
   end
  
   # start UC4 service
