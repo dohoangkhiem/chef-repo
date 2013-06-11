@@ -46,7 +46,7 @@ default['uc4agent']['servicemanager_autostart'] = "no"
 default['uc4agent']['servicemanager_autostart_delay'] = "0"
 
 # other attributes
-# default['uc4agent']['cp']
+default['uc4agent']['cp'] = "192.168.44.45"
 # default['uc4agent']['agentname']
 # default['uc4agent']['servicemanager_data_bag_name']
 

@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: uc4-agent
-# Recipe:: default
+# Recipe:: agent
 #
 # Copyright 2013, UC4 Software
 #
@@ -15,6 +15,9 @@ arch = node['kernel']['machine']
 
 agent_path = node['uc4agent']['path']
 
+# set the agent name to the hostname
+node.default['uc4agent']['agentname'] = node['hostname']
+
 if (arch =~ /i(.{1})86/)
   # x86 package
   package_name = 'agentx86'
@@ -28,7 +31,7 @@ elsif (arch =~ /ia(.*)64/)
 else
   # log message: No support for this architecture
   #return
-  Chef::Application.fatal!("No support for this architecture")
+  Chef::Application.fatal!("No support for this architecture: #{arch}")
 end
 
 if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platform_family'])
@@ -56,7 +59,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   end
 
   execute "change-owner" do
-    command "chown -R root:root #{agent_path}/*"
+    command "chown -R root:root #{agent_path}"
     action :run
   end
 
@@ -64,6 +67,8 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
     source "#{config_files[:linux]}.erb"
     mode 0644
   end
+
+  # copy ARATools.jar to agent bin
 end
 
 # For Windows node
@@ -86,7 +91,9 @@ if platform?("windows")
   end
 
   template "#{agent_path}\\bin\\#{config_files[:windows]}" do
-    source "#{config_files[:linux]}.erb"
+    source "#{config_files[:windows]}.erb"
   end
+
+  # copy ARATools.jar to agent bin
 
 end
