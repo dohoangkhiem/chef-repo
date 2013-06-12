@@ -178,7 +178,7 @@ if platform?("windows")
 
   # config Powershell
   windows_batch "config-powershell" do
-    code "powershell Set-ExecutionPolicy Unrestricted -scope CurrentUser"
+    code node['kernel']['os_info']['system_directory'] + "\\powershell Set-ExecutionPolicy Unrestricted -scope CurrentUser"
     action :run
   end
 
