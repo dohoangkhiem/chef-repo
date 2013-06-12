@@ -99,7 +99,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   unless node['uc4agent']['servicemanager_autostart'] == 'yes'
     execute "start-agent" do
       cwd "#{smgr_path}/bin"
-      command "./ucybsmcl -c START_PROCESS -h " + node['hostname'] + ":" + node['uc4servicemanager']['port'] + " -n #{phrase} -s '#{uc4_service_name}'"
+      command "./ucybsmcl -c START_PROCESS -h " + node['hostname'] + ":" + node['uc4servicemanager']['port'] + " -n #{phrase} -s \"#{uc4_service_name}\""
       action :run
     end
   end
@@ -177,10 +177,10 @@ if platform?("windows")
   end
 
   # config Powershell
-  windows_batch "config-powershell" do
-    code node['kernel']['os_info']['system_directory'] + "\\WindowsPowerShell\\v1.0\\powershell.exe Set-ExecutionPolicy Unrestricted -scope CurrentUser"
-    action :run
-  end
+  #windows_batch "config-powershell" do
+  #  code node['kernel']['os_info']['system_directory'] + "\\WindowsPowerShell\\v1.0\\powershell.exe Set-ExecutionPolicy Unrestricted -scope CurrentUser"
+  #  action :run
+  #end
 
   hostname = node['hostname']
   # invoke UCYBSMCl to start UC4 Agent
@@ -188,7 +188,7 @@ if platform?("windows")
   unless node['uc4agent']['servicemanager_autostart'] == 'yes'
     windows_batch "start-agent" do
       cwd ::File.join(node['uc4servicemanager']['path_dialog'], "bin")
-      code "UCYBSMCl.exe -c START_PROCESS -h #{hostname} -n #{phrase} -s '#{uc4_service_name}'"
+      code "UCYBSMCl.exe -c START_PROCESS -h #{hostname} -n #{phrase} -s \"#{uc4_service_name}\""
       action :run
     end
   end
