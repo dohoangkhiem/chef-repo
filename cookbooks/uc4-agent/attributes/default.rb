@@ -15,8 +15,8 @@ when "windows"
   default['uc4servicemanager']['smd_file'] = "#{node['uc4servicemanager']['path']}\\bin\\UC4.smd"
 else
   default['uc4servicemanager']['path'] = "/opt/uc4/smgr"
-  default['uc4servicemanager']['smc_file'] = "#{node['uc4servicemanager']['path']}/bin/UC4.smc"
-  default['uc4servicemanager']['smd_file'] = "#{node['uc4servicemanager']['path']}/bin/UC4.smd"
+  default['uc4servicemanager']['smc_file'] = "#{node['uc4servicemanager']['path']}/bin/uc4.smc"
+  default['uc4servicemanager']['smd_file'] = "#{node['uc4servicemanager']['path']}/bin/uc4.smd"
 end
 
 ###

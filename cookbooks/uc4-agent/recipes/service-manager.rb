@@ -76,12 +76,16 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
     )
   end
 
-  template node['uc4servicemanager']['smc_file'] do
-    source "uc4.smc.erb"
-    mode 0644
-    variables(
-      :uc4_service_name => "#{uc4_service_name}"
-    )
+  # adopt SMC file only if node['uc4agent']['servicemanager_autostart'] was configured to 'yes'
+  if node['uc4agent']['servicemanager_autostart'] == 'yes'
+    template node['uc4servicemanager']['smc_file'] do
+      source "uc4.smc.erb"
+      mode 0644
+      variables(
+        :uc4_service_name => "#{uc4_service_name}",
+        :delay => node['uc4agent']['servicemanager_autostart_delay']
+      )
+    end
   end
 
   # start UC4 service manager
@@ -127,6 +131,18 @@ if platform?("windows")
     )
   end
 
+  # adopt SMC file only if node['uc4agent']['servicemanager_autostart'] was configured to 'yes'
+  if node['uc4agent']['servicemanager_autostart'] == 'yes'
+    template node['uc4servicemanager']['smc_file'] do
+      source "uc4.smc.erb"
+      mode 0644
+      variables(
+        :uc4_service_name => "#{uc4_service_name}",
+        :delay => node['uc4agent']['servicemanager_autostart_delay']
+      )
+    end
+  end
+
   # execute service manager to install to Windows Service
   windows_batch "install-service" do
     code "#{smgr_path}\\bin\\ucybsmgr.exe -install #{phrase} -i#{smgr_path}\\bin\\ucybsmgr.ini"
@@ -158,6 +174,7 @@ if platform?("windows")
 
   hostname = node['hostname']
   # invoke UCYBSMCl to start UC4 Agent
+  # TODO: Recheck this action, maybe it's not neccessary if node['uc4agent']['servicemanager_autostart'] == 'yes', as the service manager invoked agent before
   windows_batch "start-agent" do
     cwd ::File.join(node['uc4servicemanager']['path_dialog'], "bin")
     code "UCYBSMCl.exe -c START_PROCESS -h #{hostname} -n #{phrase} -s '#{uc4_service_name}'"
