@@ -94,6 +94,16 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
     command "./ucybsmgr -iucybsmgr.ini '#{phrase}' &"
     action :run
   end
+
+  # start agent if no smc file adopted
+  unless node['uc4agent']['servicemanager_autostart'] == 'yes'
+    execute "start-agent" do
+      cwd "#{smgr_path}/bin"
+      command "./ucybsmcl -c START_PROCESS -h " + node['hostname'] + ":" + node['uc4servicemanager']['port'] + " -n #{phrase} -s '#{uc4_service_name}'"
+      action :run
+    end
+  end
+  
 end
 
 # For Windows node
@@ -174,11 +184,12 @@ if platform?("windows")
 
   hostname = node['hostname']
   # invoke UCYBSMCl to start UC4 Agent
-  # TODO: Recheck this action, maybe it's not neccessary if node['uc4agent']['servicemanager_autostart'] == 'yes', as the service manager invoked agent before
-  windows_batch "start-agent" do
-    cwd ::File.join(node['uc4servicemanager']['path_dialog'], "bin")
-    code "UCYBSMCl.exe -c START_PROCESS -h #{hostname} -n #{phrase} -s '#{uc4_service_name}'"
-    action :run
+  # TODO: Re-check this action, maybe it's not neccessary if node['uc4agent']['servicemanager_autostart'] == 'yes', as the service manager invoked agent before
+  unless node['uc4agent']['servicemanager_autostart'] == 'yes'
+    windows_batch "start-agent" do
+      cwd ::File.join(node['uc4servicemanager']['path_dialog'], "bin")
+      code "UCYBSMCl.exe -c START_PROCESS -h #{hostname} -n #{phrase} -s '#{uc4_service_name}'"
+      action :run
+    end
   end
-
 end
