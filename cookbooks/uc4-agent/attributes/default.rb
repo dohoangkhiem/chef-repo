@@ -30,7 +30,7 @@ default['uc4servicemanager']['smd_file'] = "#{node['uc4servicemanager']['path']}
 # Default UC4 Agent attributes
 ###
 default['uc4agent']['port'] = '2300'
-default['uc4agent']['systemname'] = "UC4"
+default['uc4agent']['systemname'] = "AE10" # default should be UC4 !?
 default['uc4agent']['license_class'] = '1'
 
 case node['platform_family']
@@ -47,7 +47,8 @@ default['uc4agent']['servicemanager_autostart_delay'] = "0"
 
 # other attributes
 default['uc4agent']['cp'] = "192.168.44.45"
-# default['uc4agent']['agentname']
+# Agent name will be set to the hostname by default in the recipe
+# default['uc4agent']['agentname'] 
+#
 # default['uc4agent']['servicemanager_data_bag_name']
-
 

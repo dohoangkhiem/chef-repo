@@ -19,15 +19,14 @@ agent_path = node['uc4agent']['path']
 node.default['uc4agent']['agentname'] = node['hostname']
 
 if (arch =~ /i(.{1})86/)
-  # x86 package
+  uc4_suffix = 'i3'
   package_name = 'agentx86'
-  config_files = { :windows => 'ucxjwi3.ini', :linux => 'ucxjli3.ini'}
 elsif (arch =~ /x(.*)64/)
+  uc4_suffix = 'x6'
   package_name = 'agentx64'
-  config_files = { :windows => 'ucxjwx6.ini', :linux => 'ucxjlx6.ini'}
 elsif (arch =~ /ia(.*)64/)
+  uc4_suffix = 'i6'
   package_name = 'agentia64'
-  config_files = { :windows => 'ucxjwi6.ini', :linux => 'ucxjli6.ini'}
 else
   # log message: No support for this architecture
   #return
@@ -63,12 +62,16 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
     action :run
   end
 
-  template "#{agent_path}/bin/#{config_files[:linux]}" do
-    source "#{config_files[:linux]}.erb"
+  template "#{agent_path}/bin/ucxjl#{uc4_suffix}.ini" do
+    source "ucxjl#{uc4_suffix}.ini.erb"
     mode 0644
   end
 
   # copy ARATools.jar to agent bin
+  cookbook_file "#{agent_path}\\bin\\ARATools.jar" do
+    source "ARATools.jar"
+    action :create_if_missing
+  end
 end
 
 # For Windows node
@@ -90,10 +93,14 @@ if platform?("windows")
     not_if {::File.exists?("#{agent_path}\\bin\\uc.msl")}
   end
 
-  template "#{agent_path}\\bin\\#{config_files[:windows]}" do
-    source "#{config_files[:windows]}.erb"
+  template "#{agent_path}\\bin\\ucxjw#{uc4_suffix}.ini" do
+    source "ucxjw#{uc4_suffix}.ini.erb"
   end
 
   # copy ARATools.jar to agent bin
+  cookbook_file "#{agent_path}\\bin\\ARATools.jar" do
+    source "ARATools.jar"
+    action :create_if_missing
+  end
 
 end
