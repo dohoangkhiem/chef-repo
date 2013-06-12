@@ -19,14 +19,11 @@ agent_path = node['uc4agent']['path']
 node.default['uc4agent']['agentname'] = node['hostname']
 
 if (arch =~ /i(.{1})86/)
-  uc4_suffix = 'i3'
-  package_name = 'agentx86'
+  file_suffix = 'i3'
 elsif (arch =~ /x(.*)64/)
-  uc4_suffix = 'x6'
-  package_name = 'agentx64'
+  file_suffix = 'x6'
 elsif (arch =~ /ia(.*)64/)
-  uc4_suffix = 'i6'
-  package_name = 'agentia64'
+  file_suffix = 'i6'
 else
   # log message: No support for this architecture
   #return
@@ -37,7 +34,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   
   # copy agent archive to temp location
   cookbook_file "#{cache_path}/uc4agent.tar.gz" do
-    source "#{package_name}.tar.gz"
+    source "ucagentl#{file_suffix}.tar.gz"
     mode 00755
     action :create_if_missing
   end
@@ -62,13 +59,16 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
     action :run
   end
 
-  template "#{agent_path}/bin/ucxjl#{uc4_suffix}.ini" do
-    source "ucxjl#{uc4_suffix}.ini.erb"
+  template "#{agent_path}/bin/ucxjl#{file_suffix}.ini" do
+    source "ucxjlxx.ini.erb"
     mode 0644
+    variables(
+      :file_suffix => "#{file_suffix}"
+    )
   end
 
   # copy ARATools.jar to agent bin
-  cookbook_file "#{agent_path}\\bin\\ARATools.jar" do
+  cookbook_file "#{agent_path}/bin/ARATools.jar" do
     source "ARATools.jar"
     action :create_if_missing
   end
@@ -77,7 +77,7 @@ end
 # For Windows node
 if platform?("windows")  
   cookbook_file "#{cache_path}\\uc4agent.zip" do
-    source "#{package_name}.zip"
+    source "ucagentw#{file_suffix}.zip"
     action :create_if_missing
   end
         
@@ -93,8 +93,8 @@ if platform?("windows")
     not_if {::File.exists?("#{agent_path}\\bin\\uc.msl")}
   end
 
-  template "#{agent_path}\\bin\\ucxjw#{uc4_suffix}.ini" do
-    source "ucxjw#{uc4_suffix}.ini.erb"
+  template "#{agent_path}\\bin\\ucxjw#{file_suffix}.ini" do
+    source "ucxjw#{file_suffix}.ini.erb"
   end
 
   # copy ARATools.jar to agent bin

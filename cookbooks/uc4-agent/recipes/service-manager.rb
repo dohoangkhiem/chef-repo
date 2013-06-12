@@ -17,14 +17,13 @@ arch = node['kernel']['machine']
 
 smgr_path = node['uc4servicemanager']['path']
 
+phrase = node['uc4servicemanager']['phrase']
+
 if (arch =~ /i(.{1})86/)
-  pkg_suffix = 'x86'
   file_suffix = 'i3'
 elsif (arch =~ /x(.*)64/)
-  pkg_suffix = 'x64'
   file_suffix = 'x6'
 elsif (arch =~ /ia(.*)64/)
-  pkg_suffix = 'ia64'
   file_suffix = 'i6'
 else 
   raise "No support for this architecture: #{arch}"
@@ -34,7 +33,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   
   # copy service manager archive to temp location
   cookbook_file "#{cache_path}/ucsmgr.tar.gz" do
-    source "ucsmgr#{pkg_suffix}.tar.gz"
+    source "ucsmgrl#{file_suffix}.tar.gz"
     mode 00755
     action :create_if_missing
   end
@@ -59,27 +58,44 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
     action :run
   end
 
+  # adopt service manager configuration file
   template "#{smgr_path}/bin/ucybsmgr.ini" do
     source "ucybsmgr.ini.erb"
     mode 0644
-    #notifies :run, 'execute[start-service]', :immediately
   end
 
-  # TODO: Templating SMC and SMD files
-  
+  uc4_service_name = "UC4 Unix-Agent"
+  # template SMC and SMD files
+  template node['uc4servicemanager']['smd_file'] do
+    source "uc4.smd.erb"
+    mode 0644
+    variables(
+      :uc4_service_name => "#{uc4_service_name}",
+      :executable_file => "ucxjl#{file_suffix}",
+      :ini_file => "ucxjl#{file_suffix}.ini"
+    )
+  end
 
-  # start UC4 daemon
+  template node['uc4servicemanager']['smc_file'] do
+    source "uc4.smc.erb"
+    mode 0644
+    variables(
+      :uc4_service_name => "#{uc4_service_name}"
+    )
+  end
+
+  # start UC4 service manager
   execute "start-service" do
-    command "#{smgr_path}/bin/ucybsmgr"
+    cwd "#{smgr_path}/bin"
+    command "./ucybsmgr -iucybsmgr.ini '#{phrase}' &"
     action :run
   end
-
 end
 
 # For Windows node
 if platform?("windows")  
   cookbook_file "#{cache_path}\\ucsmgr.zip" do
-    source "ucsmgr#{pkg_suffix}.zip"
+    source "ucsmgrw#{file_suffix}.zip"
     action :create_if_missing
   end
 
@@ -99,16 +115,18 @@ if platform?("windows")
     source "ucybsmgr.ini.erb"
   end
 
-  # TODO: Templating SMD file
+  uc4_service_name = "UC4 Windows-Agent"
+
+  # Templating SMD file
   template node['uc4servicemanager']['smd_file'] do
     source "UC4.smd.erb"
     variables(
+      :uc4_service_name => "#{uc4_service_name}",
       :executable_file => "ucxjw#{file_suffix}.exe",
       :ini_file => "ucxjw#{file_suffix}.ini"
     )
   end
 
-  phrase = node['uc4servicemanager']['phrase']
   # execute service manager to install to Windows Service
   windows_batch "install-service" do
     code "#{smgr_path}\\bin\\ucybsmgr.exe -install #{phrase} -i#{smgr_path}\\bin\\ucybsmgr.ini"
@@ -121,7 +139,7 @@ if platform?("windows")
 
   # copy service manager dialog
   cookbook_file "#{cache_path}\\ucsmd.zip" do
-    source "ucsmd#{pkg_suffix}.zip"
+    source "ucsmdw#{file_suffix}.zip"
     action :create_if_missing
   end
 
@@ -132,11 +150,17 @@ if platform?("windows")
     not_if {::File.exists?(::File.join(node['uc4servicemanager']['path_dialog'], "bin", "UCYBSMCl.exe"))}
   end
 
+  # config Powershell
+  windows_batch "config-powershell" do
+    code "powershell Set-ExecutionPolicy Unrestricted -scope CurrentUser"
+    action :run
+  end
+
   hostname = node['hostname']
   # invoke UCYBSMCl to start UC4 Agent
   windows_batch "start-agent" do
-    cwd node['uc4servicemanager']['path_dialog'] + "\\bin"
-    code "UCYBSMCl.exe -c START_PROCESS -h #{hostname} -n #{phrase} -s UC4-Agent"
+    cwd ::File.join(node['uc4servicemanager']['path_dialog'], "bin")
+    code "UCYBSMCl.exe -c START_PROCESS -h #{hostname} -n #{phrase} -s '#{uc4_service_name}'"
     action :run
   end
 

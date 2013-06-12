@@ -1,5 +1,5 @@
 [GLOBAL]
-name=<%= node['hostname'] %>
+name=<%= node['uc4agent']['agentname'] %>
 system=<%= node['uc4agent']['systemname'] %>
 
 logon=1
@@ -14,8 +14,8 @@ license_class=<%= node['uc4agent']['license_class'] %>
 ; userid_type=INCL
 ; use Windows Job Objects 0=no/1=yes
 useJobObject=0
-ECPEXE=
-ECPEXT=
+ECPEXE=<%= node['kernel']['os_info']['system_directory']%>\WindowsPowerShell\v1.0\powershell.exe
+ECPEXT=ps1
 ft_temp_file=yes
 HomeDirCache=10
 
