@@ -1,13 +1,13 @@
 #
 # Cookbook Name:: uc4-agent
-# Recipe:: service-manager
+# Recipe:: service_manager
 #
 # Copyright 2013, UC4 Software
 #
 # All rights reserved - Do Not Redistribute
 #
 
-include_recipe "uc4-agent::agent"
+include_recipe "uc4_agent::agent"
 
 # Install UC4 Service Manager
 
@@ -176,11 +176,12 @@ if platform?("windows")
     not_if {::File.exists?(::File.join(node['uc4servicemanager']['path_dialog'], "bin", "UCYBSMCl.exe"))}
   end
 
-  # config Powershell
-  #windows_batch "config-powershell" do
-  #  code node['kernel']['os_info']['system_directory'] + "\\WindowsPowerShell\\v1.0\\powershell.exe Set-ExecutionPolicy Unrestricted -scope CurrentUser"
-  #  action :run
-  #end
+  # config Powershell, optional
+  windows_batch "config-powershell" do
+    code node['kernel']['os_info']['system_directory'] + "\\WindowsPowerShell\\v1.0\\powershell.exe Set-ExecutionPolicy Unrestricted -scope CurrentUser"
+    action :run
+    ignore_failure true
+  end
 
   hostname = node['hostname']
   # invoke UCYBSMCl to start UC4 Agent

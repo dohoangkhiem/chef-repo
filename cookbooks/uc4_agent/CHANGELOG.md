@@ -1,10 +1,10 @@
-# CHANGELOG for uc4-agent
+# CHANGELOG for uc4_agent
 
-This file is used to list changes made in each version of uc4-agent.
+This file is used to list changes made in each version of uc4_agent.
 
 ## 0.1.0:
 
-* Initial release of uc4-agent
+* Initial release of uc4_agent
 
 - - -
 Check the [Markdown Syntax Guide](http://daringfireball.net/projects/markdown/syntax) for help with Markdown.

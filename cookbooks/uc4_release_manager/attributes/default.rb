@@ -1,0 +1,2 @@
+## Attributes for this cookbook
+

@@ -7,5 +7,5 @@
 # All rights reserved - Do Not Redistribute
 #
 
-include_recipe "uc4-agent::agent"
-include_recipe "uc4-agent::service-manager"	
+include_recipe "uc4_agent::agent"
+include_recipe "uc4_agent::service_manager"	
