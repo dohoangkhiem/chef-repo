@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: uc4-agent
+# Cookbook Name:: uc4_agent
 # Recipe:: default
 #
 # Copyright 2013, UC4 Software

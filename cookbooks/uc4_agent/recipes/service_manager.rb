@@ -48,14 +48,9 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
 
   execute "extract" do
     cwd cache_path
-    command "tar xzvf ucsmgr.tar.gz -C #{smgr_path}"
+    command "tar xzvf ucsmgr.tar.gz -C #{smgr_path} && chown -R root:root #{smgr_path}/*"
     action :run
     not_if { ::File.exists?("#{smgr_path}/bin/ucybsmgr") }
-  end
-
-  execute "change-owner" do
-    command "chown -R root:root #{smgr_path}/*"
-    action :run
   end
 
   # adopt service manager configuration file
@@ -68,7 +63,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   # template SMC and SMD files
   template node['uc4servicemanager']['smd_file'] do
     source "uc4.smd.erb"
-    mode 0644
+    mode 00644
     variables(
       :uc4_service_name => "#{uc4_service_name}",
       :executable_file => "ucxjl#{file_suffix}",
