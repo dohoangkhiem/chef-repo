@@ -42,6 +42,7 @@ default['uc4agent']['servicemanager_autostart_delay'] = "0"
 default['uc4agent']['cp'] = "192.168.44.45"
 # Agent name will be set to the hostname by default in the recipe
 # default['uc4agent']['agentname'] 
+default['uc4agent']['agentname'] = node['hostname']
 #
 # default['uc4agent']['servicemanager_data_bag_name']
 

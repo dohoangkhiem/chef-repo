@@ -86,7 +86,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
   # start UC4 service manager
   execute "start-service" do
     cwd "#{smgr_path}/bin"
-    command "./ucybsmgr -iucybsmgr.ini '#{phrase}' &"
+    command "nohup ./ucybsmgr -iucybsmgr.ini '#{phrase}' &"
     action :run
   end
 
@@ -96,6 +96,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
       cwd "#{smgr_path}/bin"
       command "./ucybsmcl -c START_PROCESS -h " + node['hostname'] + ":" + node['uc4servicemanager']['port'] + " -n #{phrase} -s \"#{uc4_service_name}\""
       action :run
+      ignore_failure true
     end
   end
   

@@ -1,7 +1,15 @@
+def whyrun_supported?
+  true
+end
+
+use_inline_resources
+
 action :create do
+  Chef::Log.info("Start Deployment Target creation..")
   name = new_resource.name
   type = new_resource.type
   folder = new_resource.folder
+  agent = new_resource.agent
   owner = new_resource.owner
   environment = new_resource.environment
 
@@ -9,15 +17,15 @@ action :create do
   dynamic_props = new_resource.dynamic_property
   update_system_properties = new_resource.update_system_properties
 
+  
   # mapping: target type => Chef cookbook(s)
   cookbook_type_map = { "tomcat" => "tomcat", "database generic" => ["postgresql", "database"], "database mssql" => ["sql_server", "database"], "database oracle" => "database", "iis" => "iis", "filebased" => "", "weblogic" => "", "generic" => "", "jboss" => "", "staging" => "", "websphere" => "" }
 
   type = type.downcase
   # check runlist of node
   if !cookbook_type_map.has_key?(type)
-    Chef::Log.info("The target type '#{type}' is not supported")
     new_resource.updated_by_last_action(false)
-    return
+    Chef::Application.fatal!("The target type '#{type}' is not supported")
   end
    
   Chef::Log.info("Checking cookbook mapping for target type '#{type}'")
@@ -28,7 +36,7 @@ action :create do
       # check if run list of node contains one of cookbook from mapped cookbooks
       found = false
       mapped_cookbooks.each do |cb|
-        if node['recipes'].include? "recipe[#{cb}]"
+        if node['recipes'].include? "#{cb}"
           Chef::Log.info("Found cookbook #{cb} on node")
           found = true
           break
@@ -36,15 +44,13 @@ action :create do
       end
 
       if !found
-        Chef::Log.info("Can't find any mapped cookbook from node run list, exiting..")
         new_resource.updated_by_last_action(false)
-        return
+        Chef::Application.fatal!("Can't find any mapped cookbook from node run list, exiting..")
       end
     else
-      if not node['recipes'].include? "recipe[#{mapped_cookbooks}]"
-        Chef::Log.info("Can't find any mapped cookbook from node run list, exiting..")
+      if not node['recipes'].include? "#{mapped_cookbooks}"
         new_resource.updated_by_last_action(false)
-        return
+        Chef::Application.fatal!("Can't find any mapped cookbook from node run list, exiting..")
       end
     end
   end
@@ -54,7 +60,7 @@ action :create do
   ReleaseManager.set_connection_info(connection_info['url'], connection_info['username'], connection_info['password']) 
 
   Chef::Log.info("Creating new deployment target #{name}..")
-
+ 
   begin 
     system_id = ReleaseManager.create_deployment_target(name, type, folder, owner, environment, agent, props, dynamic_props)
     if system_id > 0
@@ -67,7 +73,7 @@ action :create do
     end
   rescue Exception => e
     Chef::Log.info("Failed to create or update deployment target #{name}")
-    Chef::Log.info(e.message)
+    Chef::Log.debug(e.message)
     Chef::Log.debug(e.backtrace.inspect)
     new_resource.updated_by_last_action(false)
   end

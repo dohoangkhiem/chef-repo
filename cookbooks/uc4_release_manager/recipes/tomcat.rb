@@ -1,6 +1,20 @@
-chef_gem "savon"
+chef_gem "savon" do
+  version '2.2.0'
+end
+
+#g = gem_package "savon" do
+#  action :nothing
+#end
+
+#g.run_action(:install)
+
+#Gem.clear_paths
+
+require 'savon'
 
 # collect attributes
+
+node.default['uc4releasemanager']['system_agent'] = node['hostname']
 
 node.override['uc4releasemanager']['tomcat']['system_folder'] = "D_X1"
 node.override['uc4releasemanager']['tomcat']['system_owner'] = ""
@@ -13,18 +27,19 @@ environment = node['uc4releasemanager']['tomcat']['system_environment']
 
 agent = node['uc4releasemanager']['system_agent']
 
-if !node['recipes'].include?("recipe[tomcat]")
+if not node['recipes'].include?("tomcat")
   Chef::Application.fatal!("No Tomcat recipe on this node, exiting..")
 end
 
 # create deployment target
-rm_deployment_target "#{target_name}" do
+uc4_release_manager_rm_deployment_target "#{target_name}" do
+  name "#{target_name}"
   owner "#{owner}"
   folder "#{folder}"
   environment "#{environment}"
   agent "#{agent}"
   type "Tomcat"
-  property ({ "port" => node['tomcat']['port'], "base_directory" => node['tomcat']['base_dir'] })
+  property ({ "port" => node['tomcat']['port'], "base_directory" => node['tomcat']['base'] })
   action :create
 end
 

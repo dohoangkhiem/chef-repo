@@ -16,7 +16,7 @@ node.default['uc4releasemanager']['system_agent'] = node['uc4agent']['name']
 
 # Default attribute for Tomcat recipe
 
-node.default['uc4releasemanager']['tomcat']['system_folder'] = node['uc4releasemanage']['system_folder']
-node.default['uc4releasemanager']['tomcat']['system_owner'] = node['uc4releasemanage']['system_owner']
-node.default['uc4releasemanager']['tomcat']['system_environment'] = node['uc4releasemanage']['system_environment']
+node.default['uc4releasemanager']['tomcat']['system_folder'] = node['uc4releasemanager']['system_folder']
+node.default['uc4releasemanager']['tomcat']['system_owner'] = node['uc4releasemanager']['system_owner']
+node.default['uc4releasemanager']['tomcat']['system_environment'] = node['uc4releasemanager']['system_environment']
 
