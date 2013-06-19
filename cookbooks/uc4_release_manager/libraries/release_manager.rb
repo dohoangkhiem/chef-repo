@@ -62,6 +62,7 @@ module ReleaseManager
     
     # create or update deployment target
     Chef::Log.debug("Creating deployment target..")
+    #TODO Use XML data instead
     csv_string = CSV.generate do |csv|
       csv << ["system_name", "system_owner.system_name", "system_folder.system_name", "system_deployment_agent_name", "system_description", "system_custom_type", "system_is_active",      "system_identity_properties"] + props.keys + dynamic_props.keys
       csv << [name, owner, folder, agent, "created via RM Chef cookbook", type, "true", "system_name"] + props.values + dynamic_props.values
