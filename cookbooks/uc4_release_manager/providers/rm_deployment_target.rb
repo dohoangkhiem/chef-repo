@@ -5,7 +5,6 @@ end
 use_inline_resources
 
 action :create do
-  Chef::Log.info("Start Deployment Target creation..")
   name = new_resource.name
   type = new_resource.type
   folder = new_resource.folder
@@ -16,7 +15,6 @@ action :create do
   props = new_resource.property
   dynamic_props = new_resource.dynamic_property
   update_system_properties = new_resource.update_system_properties
-
   
   # mapping: target type => Chef cookbook(s)
   cookbook_type_map = { "tomcat" => "tomcat", "database generic" => ["postgresql", "database"], "database mssql" => ["sql_server", "database"], "database oracle" => "database", "iis" => "iis", "filebased" => "", "weblogic" => "", "generic" => "", "jboss" => "", "staging" => "", "websphere" => "" }
@@ -28,7 +26,6 @@ action :create do
     Chef::Application.fatal!("The target type '#{type}' is not supported")
   end
    
-  Chef::Log.info("Checking cookbook mapping for target type '#{type}'")
   mapped_cookbooks = cookbook_type_map[type]
   
   unless mapped_cookbooks.empty? 
@@ -45,19 +42,35 @@ action :create do
 
       if !found
         new_resource.updated_by_last_action(false)
-        Chef::Application.fatal!("Can't find any mapped cookbook from node run list, exiting..")
+        Chef::Application.fatal!("Can't find any mapped cookbook from node run list, supported types: #{cookbook_type_map.keys.join(', ')}")
       end
     else
       if not node['recipes'].include? "#{mapped_cookbooks}"
         new_resource.updated_by_last_action(false)
-        Chef::Application.fatal!("Can't find any mapped cookbook from node run list, exiting..")
+        Chef::Application.fatal!("Can't find any mapped cookbook from node run list, supported types: #{cookbook_type_map.keys.join(', ')}")
       end
     end
   end
+
+  savon_gem = chef_gem "savon" do
+    version '2.2.0'
+  end
+
+  require 'savon'
   
   # init ReleaseManager with connection information from data bag 
-  connection_info = data_bag_item("uc4_release_manager", "connection")
-  ReleaseManager.set_connection_info(connection_info['url'], connection_info['username'], connection_info['password']) 
+  Chef::Log.info("Retrieving connection data bag from Chef server..")
+  begin
+    ReleaseManager.init_connection()
+    Chef::Log.info("Successfully retrieved connection data bag.")
+  rescue Exception => e
+    Chef::Log.debug("Error occurred: #{e.message}")
+    Chef::Log.debug(e.backtrace.inspect)
+    Chef::Application.fatal!("Error: Failed to retrieve connection data bag from Chef server.")
+  end
+  
+  # due to the fact that AE always convert agent name to upper case
+  agent = agent.upcase
 
   Chef::Log.info("Creating new deployment target #{name}..")
  
@@ -65,17 +78,18 @@ action :create do
     system_id = ReleaseManager.create_deployment_target(name, type, folder, owner, environment, agent, props, dynamic_props)
     if system_id > 0
       Chef::Log.info("Successfully created/updated deployment target")
-      node['uc4releasemanager']['tomcat']['system_id'] = system_id
-      node['uc4releasemanager']['tomcat']['system_name'] = name
+      node.override['uc4releasemanager']['tomcat']['system_id'] = system_id
+      node.override['uc4releasemanager']['tomcat']['system_name'] = name
       new_resource.updated_by_last_action(true)
     else
+       Chef::Log.info("Unsuccessful operation: Release Manager response status code = #{system_id}")
        new_resource.updated_by_last_action(false)
     end
   rescue Exception => e
-    Chef::Log.info("Failed to create or update deployment target #{name}")
-    Chef::Log.debug(e.message)
+    Chef::Log.debug("Error message: #{e.message}")
     Chef::Log.debug(e.backtrace.inspect)
     new_resource.updated_by_last_action(false)
+    Chef::Application.fatal!("Failed to create or update deployment target #{name}")
   end
  
 end

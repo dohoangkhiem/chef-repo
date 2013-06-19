@@ -1,18 +1,6 @@
-chef_gem "savon" do
-  version '2.2.0'
-end
-
-#g = gem_package "savon" do
-#  action :nothing
+#chef_gem "savon" do
+#  version '2.2.0'
 #end
-
-#g.run_action(:install)
-
-#Gem.clear_paths
-
-require 'savon'
-
-# collect attributes
 
 node.default['uc4releasemanager']['system_agent'] = node['hostname']
 
@@ -21,7 +9,7 @@ node.override['uc4releasemanager']['tomcat']['system_owner'] = ""
 node.override['uc4releasemanager']['tomcat']['system_environment'] = ""
 
 target_name = node['uc4releasemanager']['system_agent'] + " Tomcat server" 
-owner = node['uc4releasemanager']['tomcat']['system_owner']
+owner = 'admin' #node['uc4releasemanager']['tomcat']['system_owner']
 folder = node['uc4releasemanager']['tomcat']['system_folder']
 environment = node['uc4releasemanager']['tomcat']['system_environment']
 
@@ -33,7 +21,7 @@ end
 
 # create deployment target
 uc4_release_manager_rm_deployment_target "#{target_name}" do
-  name "#{target_name}"
+  name target_name
   owner "#{owner}"
   folder "#{folder}"
   environment "#{environment}"
@@ -41,6 +29,7 @@ uc4_release_manager_rm_deployment_target "#{target_name}" do
   type "Tomcat"
   property ({ "port" => node['tomcat']['port'], "base_directory" => node['tomcat']['base'] })
   action :create
+  not_if { ReleaseManager.deployment_target_exist?(target_name) }
 end
 
 

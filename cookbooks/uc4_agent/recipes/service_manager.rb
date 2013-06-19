@@ -88,6 +88,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
     cwd "#{smgr_path}/bin"
     command "nohup ./ucybsmgr -iucybsmgr.ini '#{phrase}' &"
     action :run
+	#not_if "ps aux | grep ucybsmgr | grep -v grep"
   end
 
   # start agent if no smc file adopted
@@ -97,6 +98,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
       command "./ucybsmcl -c START_PROCESS -h " + node['hostname'] + ":" + node['uc4servicemanager']['port'] + " -n #{phrase} -s \"#{uc4_service_name}\""
       action :run
       ignore_failure true
+      only_if "sleep 5"  # delay to wait for ucybsmgr
     end
   end
   
