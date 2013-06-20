@@ -71,18 +71,31 @@ module ReleaseManager
   end
 
   # create or update deployment target
-  def self.create_deployment_target(name, type, folder, owner, environment, agent, props, dynamic_props)  
+  def self.create_deployment_target(name, type, folder, owner, environment, agent, props, dynamic_props, update_system_properties)  
    
     self.init_rm unless @initialized
 
-    Chef::Log.info("Creating deployment target..")
+    exclude_system_props = false
+    if not update_system_properties
+      # check existence of target
+      # if target exists, just update agent, props, dynamic props
+      exclude_system_props = true if self.deployment_target_exist?(name)
+    end
+
+    Chef::Log.info("Importing deployment target..")
     
     doc = REXML::Document.new '<?xml version="1.0" encoding="UTF-8"?>'
     root = doc.add_element 'Sync', { "xmlns:xsi" => "http://www.w3.org/2001/XMLSchema-instance" }
     entity = root.add_element "Entity", { "mainType" => "DeploymentTarget", "customType" => type }
-    prop_hash = { "system_name" => name, "system_owner.system_name" => owner, "system_folder.system_name" => folder, "system_deployment_agent_name" => agent,
+
+    if exclude_system_props
+      prop_hash = { "system_name" => name, "system_deployment_agent_name" => agent }
+    else
+      prop_hash = { "system_name" => name, "system_owner.system_name" => owner, "system_folder.system_name" => folder, "system_deployment_agent_name" => agent,
                   "system_description" => "created via RM Chef cookbook", "system_is_active" => "true" }
-    
+    end
+
+    # add custom properties
     prop_hash = prop_hash.merge(props)    
 
     prop_hash.keys.each do |prk|
@@ -120,10 +133,10 @@ module ReleaseManager
      return status
     end
 
-    Chef::Log.info("Deployment target created successfully")
+    Chef::Log.info("Deployment target import successfully")
     
     # add environment
-    if not environment.nil? and not environment.empty?
+    if not exclude_system_props and not environment.nil? and not environment.empty?
       begin
         env_id = self.get_environment_id(environment)
         if (env_id > 0)
@@ -173,17 +186,17 @@ module ReleaseManager
       sleep 1
     end
     
-    Chef::Log.debug("Get Status SOAP response: " + response.to_hash)
+    Chef::Log.debug("Get Status SOAP response: " + response.to_s)
     
     data = response.body[:get_status_response][:get_status_result][:data]
     
     if data.lines.count < 2
-      Chef::Log.info("Environment not found: #{name}")
+      Chef::Log.info("Environment not found: #{name}. Skip environment import.")
       return -1
     end
 
     env_id = data.split("\n")[1].split(",")[-1]
-    return env_id
+    return env_id.to_i
   end
 
   # add environment relation to target
@@ -202,7 +215,7 @@ module ReleaseManager
     message = { "username" => @@username, "password" => @@password, "mainType" => "EnvironmentDeploymentTargetRelation", "failOnError" => true, "fomat" => "CSV", "data" => csv_string}
     response = @@client.call(:import, message: message)
 
-    status = response.body[:import_response][:import_result][:status] 
+    status = response.body[:import_response][:import_result][:status].to_i 
     
     token = response.body[:import_response][:import_result][:token]
 
@@ -221,7 +234,10 @@ module ReleaseManager
       if not error.nil? and not error.empty?
         Chef::Log.info("Error detail: " + error.to_s)
       end
+      return
     end
+    
+    Chef::Log.info("Environment update finished")
   end
 
   # update dynamic properties of given target
@@ -275,7 +291,10 @@ module ReleaseManager
       if not error.nil? and not error.empty?
         Chef::Log.info("Error detail: " + error.to_s)
       end
+      return
     end
+    
+    Chef::Log.info("Dynamic properties update finished")
   end
 
 end

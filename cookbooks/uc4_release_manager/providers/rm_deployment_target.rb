@@ -15,6 +15,10 @@ action :create do
   props = new_resource.property
   dynamic_props = new_resource.dynamic_property
   update_system_properties = new_resource.update_system_properties
+
+  if name.empty? or type.empty? or folder.empty? or owner.empty?
+    Chef::Application.fatal!("Name, type, folder and owner must not be empty!")
+  end
   
   # mapping: target type => Chef cookbook(s)
   cookbook_type_map = { "tomcat" => "tomcat", "database generic" => ["postgresql", "database"], "database mssql" => ["sql_server", "database"], "database oracle" => "database", "iis" => "iis", "filebased" => "", "weblogic" => "", "generic" => "", "jboss" => "", "staging" => "", "websphere" => "" }
@@ -70,7 +74,7 @@ action :create do
   Chef::Log.info("Creating new deployment target #{name}..")
  
   begin 
-    system_id = ReleaseManager.create_deployment_target(name, type, folder, owner, environment, agent, props, dynamic_props)
+    system_id = ReleaseManager.create_deployment_target(name, type, folder, owner, environment, agent, props, dynamic_props, update_system_properties)
     if system_id > 0
       Chef::Log.info("Successfully created/updated deployment target")
       node.override['uc4releasemanager']['tomcat']['system_id'] = system_id

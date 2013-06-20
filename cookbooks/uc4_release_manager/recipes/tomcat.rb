@@ -19,15 +19,14 @@ end
 
 # create deployment target
 uc4_release_manager_rm_deployment_target "#{target_name}" do
-  name target_name
   owner "#{owner}"
   folder "#{folder}"
-  environment "#{environment}"
+  environment "Test"
   agent "#{agent}"
   type "Tomcat"
   property ({ "port" => node['tomcat']['port'], "home_directory" => node['tomcat']['base'] })
   dynamic_property ({ "author" => { "type" => "SingleLineText", "namespace" => "/the/name/space", "value" => "Khiem Do Hoang" }, 
-                      "version"=> { "type" => "SingleLineText", "namespace" =? "/another/nam/space/", "value" => "1.2.5" }                   
+                      "version"=> { "type" => "SingleLineText", "namespace" => "/another/name/space/", "value" => "1.2.5" }                   
                    })
   action :create
   not_if { ReleaseManager.deployment_target_exist?(target_name) }
