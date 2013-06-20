@@ -51,21 +51,16 @@ action :create do
       end
     end
   end
-
-  savon_gem = chef_gem "savon" do
-    version '2.2.0'
-  end
-
-  require 'savon'
   
   # init ReleaseManager with connection information from data bag 
   Chef::Log.info("Retrieving connection data bag from Chef server..")
   begin
-    ReleaseManager.init_connection()
+    ReleaseManager.init_rm
     Chef::Log.info("Successfully retrieved connection data bag.")
   rescue Exception => e
     Chef::Log.debug("Error occurred: #{e.message}")
     Chef::Log.debug(e.backtrace.inspect)
+    new_resource.updated_by_last_action(false)
     Chef::Application.fatal!("Error: Failed to retrieve connection data bag from Chef server.")
   end
   
@@ -86,7 +81,7 @@ action :create do
        new_resource.updated_by_last_action(false)
     end
   rescue Exception => e
-    Chef::Log.debug("Error message: #{e.message}")
+    Chef::Log.info("Error occurred: #{e.message}")
     Chef::Log.debug(e.backtrace.inspect)
     new_resource.updated_by_last_action(false)
     Chef::Application.fatal!("Failed to create or update deployment target #{name}")
