@@ -26,10 +26,12 @@ uc4_release_manager_rm_deployment_target "#{target_name}" do
   type "Tomcat"
   property ({ "port" => node['tomcat']['port'], "home_directory" => node['tomcat']['base'] })
   dynamic_property ({ "author" => { "type" => "SingleLineText", "namespace" => "/the/name/space", "value" => "Khiem Do Hoang" }, 
-                      "version"=> { "type" => "SingleLineText", "namespace" => "/another/name/space/", "value" => "1.2.5" }                   
+                      "version"=> { "type" => "SingleLineText", "namespace" => "/another/name/space/", "value" => "1.2.7" },
+                      "organization"=> { "type" => "SingleLineText", "namespace" => "/another/name/space/", "value" => "uc4" }
                    })
   action :create
-  not_if { ReleaseManager.deployment_target_exist?(target_name) }
+  update_system_properties false
+  #not_if { ReleaseManager.deployment_target_exist?(target_name) }
 end
 
 

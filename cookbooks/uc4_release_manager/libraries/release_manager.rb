@@ -89,6 +89,7 @@ module ReleaseManager
     entity = root.add_element "Entity", { "mainType" => "DeploymentTarget", "customType" => type }
 
     if exclude_system_props
+      Chef::Log.info("Ecxlude system properties due to update_system_properties = false")
       prop_hash = { "system_name" => name, "system_deployment_agent_name" => agent }
     else
       prop_hash = { "system_name" => name, "system_owner.system_name" => owner, "system_folder.system_name" => folder, "system_deployment_agent_name" => agent,
@@ -270,10 +271,15 @@ module ReleaseManager
       entity = root.add_element "Entity", { "mainType" => "DynamicProperty" }
       prop_hash.keys.each do |prk|
         prop_ele = entity.add_element "Property", { "name" => prk }
+        if prk == 'system_full_name' or prk == 'system_on_entity.system_id' or prk == 'system_on_maintype'
+          prop_ele.add_attribute "isIdentity", "true"
+        end
         value_ele = prop_ele.add_element "Value"
         value_ele.add_text "#{prop_hash[prk]}"
       end
     end
+
+    Chef::Log.debug(doc.to_s)
   
     message = { "username" => @@username, "password" => @@password, "mainType" => "DynamicProperty", "failOnError" => false, "fomat" => "XML", "data" => doc.to_s }
     
