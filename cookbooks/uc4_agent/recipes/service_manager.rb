@@ -65,7 +65,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
     source "uc4.smd.erb"
     mode 00644
     variables(
-      :uc4_service_name => "#{uc4_service_name}",
+      :uc4_service_name => uc4_service_name,
       :executable_file => "ucxjl#{file_suffix}",
       :ini_file => "ucxjl#{file_suffix}.ini"
     )
@@ -77,7 +77,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
       source "uc4.smc.erb"
       mode 0644
       variables(
-        :uc4_service_name => "#{uc4_service_name}",
+        :uc4_service_name => uc4_service_name,
         :delay => node['uc4agent']['servicemanager_autostart_delay']
       )
     end
@@ -128,14 +128,29 @@ if platform?("windows")
   end
 
   uc4_service_name = "UC4 Windows-Agent"
-
+  
+  # try fetching data bag
+  logon_str = ''
+  bag_name = node['uc4agent']['servicemanager_data_bag_name']
+  if not bag_name.nil? and bag_name.empty?
+    begin
+      log "Fetching data bag item 'logonas'.."
+      logonas = data_bag_item(bag_name, "logonas")
+      logon_str = "LOGON=(#{logonas['username']},#{logonas['password']},#{logonas['domain']})"
+      log "Successfully fetched 'logonas' data bag item"
+    rescue Exception => e
+      log "Failed to fetch data bag item 'logonas'"
+    end
+  end
+  
   # Templating SMD file
   template node['uc4servicemanager']['smd_file'] do
     source "UC4.smd.erb"
     variables(
-      :uc4_service_name => "#{uc4_service_name}",
+      :uc4_service_name => uc4_service_name,
       :executable_file => "ucxjw#{file_suffix}.exe",
-      :ini_file => "ucxjw#{file_suffix}.ini"
+      :ini_file => "ucxjw#{file_suffix}.ini",
+      :logon_str => logon_str
     )
   end
 
@@ -145,7 +160,7 @@ if platform?("windows")
       source "uc4.smc.erb"
       mode 0644
       variables(
-        :uc4_service_name => "#{uc4_service_name}",
+        :uc4_service_name => uc4_service_name,
         :delay => node['uc4agent']['servicemanager_autostart_delay']
       )
     end

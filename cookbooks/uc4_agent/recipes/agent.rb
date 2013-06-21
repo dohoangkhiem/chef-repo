@@ -63,7 +63,7 @@ if ['debian', 'rhel', 'fedora', 'freebsd', 'arch', 'suse'].include?(node['platfo
     source "ucxjlxx.ini.erb"
     mode 0644
     variables(
-      :file_suffix => "#{file_suffix}"
+      :file_suffix => file_suffix
     )
   end
 

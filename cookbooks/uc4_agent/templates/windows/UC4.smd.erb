@@ -14,4 +14,4 @@ DEFINE UC4 CP1;*CP_STARTCMD;*SRV_STARTPATH
 DEFINE UC4 CP2;*CP_STARTCMD;*SRV_STARTPATH
 DEFINE UC4 SAP-Agent;java -jar -Xrs -Xmx256M ucxjr3x.jar;*OWN\..\..\Agents\SAP\bin\
 
-DEFINE <%= @uc4_service_name%>;<%= node['uc4agent']['path']%>\bin\<%= @executable_file%> <%= node['uc4agent']['path']%>\bin\<%= @ini_file%>;<%= node['uc4agent']['path']%>\bin\
+DEFINE <%= @uc4_service_name%>;<%= node['uc4agent']['path']%>\bin\<%= @executable_file%> <%= node['uc4agent']['path']%>\bin\<%= @ini_file%>;<%= node['uc4agent']['path']%>\bin\;<%= @logon_str%>

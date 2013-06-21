@@ -89,7 +89,7 @@ module ReleaseManager
     entity = root.add_element "Entity", { "mainType" => "DeploymentTarget", "customType" => type }
 
     if exclude_system_props
-      Chef::Log.info("Ecxlude system properties due to update_system_properties = false")
+      Chef::Log.info("Exclude system properties due to update_system_properties = false")
       prop_hash = { "system_name" => name, "system_deployment_agent_name" => agent }
     else
       prop_hash = { "system_name" => name, "system_owner.system_name" => owner, "system_folder.system_name" => folder, "system_deployment_agent_name" => agent,
