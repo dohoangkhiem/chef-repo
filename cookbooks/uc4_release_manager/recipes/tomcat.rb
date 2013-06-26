@@ -18,16 +18,16 @@ if not node['recipes'].include?("tomcat")
 end
 
 # create deployment target
-uc4_release_manager_rm_deployment_target "#{target_name}" do
-  owner "#{owner}"
-  folder "#{folder}"
+uc4_release_manager_rm_deployment_target target_name do
+  owner owner
+  folder folder
   environment "Test"
-  agent "#{agent}"
+  agent agent
   type "Tomcat"
-  property ({ "port" => node['tomcat']['port'], "home_directory" => node['tomcat']['base'] })
-  dynamic_property ({ "author" => { "type" => "SingleLineText", "namespace" => "/the/name/space", "value" => "Khiem Do Hoang" }, 
-                      "version"=> { "type" => "SingleLineText", "namespace" => "/another/name/space/", "value" => "1.2.7" },
-                      "organization"=> { "type" => "SingleLineText", "namespace" => "/another/name/space/", "value" => "uc4" }
+  property ({ port: node['tomcat']['port'], home_directory: node['tomcat']['base'] }) # key as property name, value as property value
+  dynamic_property ({ author: { type: "SingleLineText", namespace: "/the/name/space", value: "Khiem Do Hoang" }, # key as dynamic property name, value is a hash contains type, namespace, value, ... of dynamic property
+                      version: { type: "SingleLineText", namespace: "/another/name/space/", value: "1.2.7" },
+                      organization: { type: "SingleLineText", namespace: "/another/name/space/", value: "uc4" }
                    })
   action :create
   update_system_properties false

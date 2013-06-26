@@ -15,7 +15,9 @@ module ReleaseManager
 
   # init connection info, soap client
   def self.init_rm()
+    Chef::Log.info("Retrieving connection data bag from Chef server..")
     connection_info = Chef::DataBagItem.load("uc4_release_manager", "connection")
+    Chef::Log.info("Successfully retrieved connection data bag")
     @@url = connection_info['url']
     @@username = connection_info['username']
     @@password = connection_info['password']
@@ -63,7 +65,7 @@ module ReleaseManager
       end
   
     rescue Exception => e
-      Chef::Log.info("Failed to check deployment target #{name_or_id}. We will assume that this target does not exist.")
+      Chef::Log.info("Failed to check deployment target #{name_or_id}. We will assume that this target does not exist")
       Chef::Log.debug(e.message)
       Chef::Log.debug(e.backtrace.inspect)
       false
@@ -105,7 +107,7 @@ module ReleaseManager
         prop_ele.add_attribute "isIdentity", "true"
       end
       value_ele = prop_ele.add_element "Value"
-      value_ele.add_text "#{prop_hash[prk]}"
+      value_ele.add_text prop_hash[prk]
     end
   
     message = { "username" => @@username, "password" => @@password, "mainType" => "DeploymentTarget", "failOnError" => true, "fomat" => "XML", "data" => doc.to_s }
@@ -191,7 +193,7 @@ module ReleaseManager
     
     data = response.body[:get_status_response][:get_status_result][:data]
     
-    if data.lines.count < 2
+    if data.nil? or data.lines.count < 2
       Chef::Log.info("Environment not found: #{name}. Skip environment import.")
       return -1
     end
@@ -275,11 +277,9 @@ module ReleaseManager
           prop_ele.add_attribute "isIdentity", "true"
         end
         value_ele = prop_ele.add_element "Value"
-        value_ele.add_text "#{prop_hash[prk]}"
+        value_ele.add_text prop_hash[prk]
       end
     end
-
-    Chef::Log.debug(doc.to_s)
   
     message = { "username" => @@username, "password" => @@password, "mainType" => "DynamicProperty", "failOnError" => false, "fomat" => "XML", "data" => doc.to_s }
     

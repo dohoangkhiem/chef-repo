@@ -37,7 +37,7 @@ action :create do
       # check if run list of node contains one of cookbook from mapped cookbooks
       found = false
       mapped_cookbooks.each do |cb|
-        if node['recipes'].include? "#{cb}"
+        if node['recipes'].include? cb
           Chef::Log.info("Found cookbook #{cb} on node")
           found = true
           break
@@ -49,7 +49,7 @@ action :create do
         Chef::Application.fatal!("Can't find any mapped cookbook from node run list, supported types: #{cookbook_type_map.keys.join(', ')}")
       end
     else
-      if not node['recipes'].include? "#{mapped_cookbooks}"
+      if not node['recipes'].include? mapped_cookbooks
         new_resource.updated_by_last_action(false)
         Chef::Application.fatal!("Can't find any mapped cookbook from node run list, supported types: #{cookbook_type_map.keys.join(', ')}")
       end
@@ -57,15 +57,14 @@ action :create do
   end
   
   # init ReleaseManager with connection information from data bag 
-  Chef::Log.info("Retrieving connection data bag from Chef server..")
+  Chef::Log.info("Initializing Release Manager client library..")
   begin
-    ReleaseManager.init_rm
-    Chef::Log.info("Successfully retrieved connection data bag.")
+    ReleaseManager.init_rm  
   rescue Exception => e
-    Chef::Log.debug("Error occurred: #{e.message}")
+    Chef::Log.info("Error occurred: #{e.message}")
     Chef::Log.debug(e.backtrace.inspect)
     new_resource.updated_by_last_action(false)
-    Chef::Application.fatal!("Error: Failed to retrieve connection data bag from Chef server.")
+    Chef::Application.fatal!("Error: Failed to initialize Release Manager library!")
   end
   
   # due to the fact that AE always convert agent name to upper case
