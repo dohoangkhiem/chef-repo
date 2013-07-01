@@ -17,7 +17,7 @@ arch = node['kernel']['machine']
 
 smgr_path = node['uc4servicemanager']['path']
 
-phrase = node['uc4servicemanager']['phrase']
+phrase = node['uc4servicemanager']['phrase'].downcase
 
 if (arch =~ /i(.{1})86/)
   file_suffix = 'i3'
