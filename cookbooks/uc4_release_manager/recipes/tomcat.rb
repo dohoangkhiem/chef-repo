@@ -1,23 +1,33 @@
 ###
 
-node.default['uc4releasemanager']['system_agent'] = node['hostname']
+if node['uc4releasemanager']['system_agent'].nil? or node['uc4releasemanager']['system_agent'].empty?
+  target_name = "#{node['fqdn']} Tomcat server"
+  agent = node['fqdn']
+else
+  target_name = node['uc4releasemanager']['system_agent'] + " Tomcat server" 
+  agent = node['uc4releasemanager']['system_agent']
+end
 
-node.override['uc4releasemanager']['tomcat']['system_folder'] = "D_X1"
-node.override['uc4releasemanager']['tomcat']['system_owner'] = ""
-node.override['uc4releasemanager']['tomcat']['system_environment'] = ""
+unless node['uc4releasemanager']['tomcat']['system_owner'].empty?
+  owner = node['uc4releasemanager']['tomcat']['system_owner']
+else
+  owner = 'admin'
+end
 
-target_name = node['uc4releasemanager']['system_agent'] + " Tomcat server" 
-owner = 'admin' #node['uc4releasemanager']['tomcat']['system_owner']
-folder = node['uc4releasemanager']['tomcat']['system_folder']
+if node['uc4releasemanager']['tomcat']['system_folder'].empty?
+  folder = "D_X1"  
+else
+  folder = node['uc4releasemanager']['tomcat']['system_folder']
+end
+
 environment = node['uc4releasemanager']['tomcat']['system_environment']
-
-agent = node['uc4releasemanager']['system_agent']
 
 if not node['recipes'].include?("tomcat")
   Chef::Application.fatal!("No Tomcat recipe on this node, exiting..")
 end
 
 # create deployment target
+# name, type, tomcat, folder are required
 uc4_release_manager_rm_deployment_target target_name do
   owner owner
   folder folder
